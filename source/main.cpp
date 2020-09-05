@@ -1,11 +1,10 @@
 #include <Maia/common.hpp>
 
 #include <Maia/gl/gl.hpp>
+#include <Maia/planet.hpp>
 
 #define PAR_OCTASPHERE_IMPLEMENTATION
 #include <Maia/3rdparty/octasphere.h>
-
-auto sqr = [](auto v) { return v * v; };
 
 gl::Mesh make_planet() {
     const par_octasphere_config cfg = {
@@ -68,9 +67,10 @@ int main() {
     gl::init();
 
     gl::MatrixStack setup_stack{};
-    setup_stack.mode(GL_PROJECTION).identity().perspective(70, 256.0 / 192.0, 0.1, 4000);
+    setup_stack.mode(GL_PROJECTION).identity();
     setup_stack.mode(GL_MODELVIEW).identity();
     setup_stack.mode(GL_TEXTURE).identity();
+    setup_stack.mode(GL_POSITION).identity();
     setup_stack.mode(GL_MODELVIEW).apply();
 
     glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT1);
@@ -80,93 +80,24 @@ int main() {
 
     glMaterialShinyness();
 
-    glMaterialf(GL_AMBIENT, RGB15(2, 2, 2));
-	glMaterialf(GL_DIFFUSE, RGB15(15, 15, 15));
-	glMaterialf(GL_SPECULAR, BIT(15) | RGB15(8,8,8));
-
     glColor3b(255, 255, 255);
     printf("\u001b[32;1mDone\u001b[37;1m\n");
 
     auto mesh = make_planet();
 
-    struct Planet {
-        struct vec3 { 
-            float x, y, z; 
+    Planet a{mesh};
+    a.colour = {0xf9, 0x90, 0x6f};
+    a.mass = 1000;
 
-            vec3& operator+=(const vec3& b){
-                x += b.x;
-                y += b.y;
-                z += b.z;
+    Planet b{mesh};
+    b.colour = {0x00, 0x71, 0xc5};
+    b.pos = {-10, 0, 0};
+    b.vel = {0, 10, 0};
+    b.mass = 1;
 
-                return *this;
-            }
+    std::vector<Planet> planets = {std::move(a), std::move(b)};
 
-            vec3 operator-(const vec3& b){
-                return {x - b.x, y - b.y, z - b.z};
-            }
-
-            vec3& operator*=(float b){
-                x *= b;
-                y *= b;
-                z *= b;
-
-                return *this;
-            }
-
-            vec3 operator*(float b){
-                return {x * b, y * b, z * b};
-            }
-
-            vec3 operator/(float b){
-                return {x / b, y / b, z / b};
-            }
-
-            vec3& operator/=(float b){
-                x /= b;
-                y /= b;
-                z /= b;
-
-                return *this;
-            }
-
-            float sqr_magnitude(){
-                return sqr(x) + sqr(y) + sqr(z);
-            }
-
-            float magnitude(){
-                return sqrt(sqr(x) + sqr(y) + sqr(z));
-            }
-
-            vec3 normalized(){
-                auto mag = magnitude();
-                return {x / mag, y / mag, z / mag};
-            }
-
-            auto operator<=>(const vec3&) const = default;
-        };
-
-        vec3 pos, vel, acc;
-        size_t mass;
-
-        auto operator<=>(const Planet&) const = default;
-
-        void step(float dt){
-            vel += acc * dt;
-            pos += vel * dt;
-            acc = {};
-        }
-
-        void add_force(vec3 f){
-            acc += f / mass;
-        }
-    };
-
-    std::vector<Planet> planets = {
-        {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, 1000},
-        {{-10, 0, 0}, {0, 10, 0}, {0, 0, 0}, 1}
-    };
-
-    float x = 0, y = 0;
+    float x = 0, fov = 70;
     while(true){
         scanKeys();
         auto keys = keysHeld();
@@ -177,32 +108,21 @@ int main() {
         if(keys & KEY_LEFT) x -= 1;
         if(keys & KEY_RIGHT) x += 1;
 
-        if(keys & KEY_UP) y += 3;
-        if(keys & KEY_DOWN) y -= 3;
+        if(keys & KEY_R) fov -= 0.5;
+        if(keys & KEY_L) fov += 0.5;
         
         gl::MatrixStack s{};
-        s.mode(GL_MODELVIEW).identity().look_at({sin(x * 0.1) * 20, 5, cos(x * 0.1) * 20}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}).apply();
+        s.mode(GL_PROJECTION).identity().perspective(fov, 256.0 / 192.0, 0.1, 4000);
+        s.mode(GL_MODELVIEW).identity().look_at({sin(x * 0.1) * 20, 5, cos(x * 0.1) * 20}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+        s.apply();
 
         for(auto& planet : planets) {
-            gl::MatrixStack stack{};
-            stack.mode(GL_MODELVIEW).push().translate(planet.pos.x, planet.pos.y, planet.pos.z).scale(0.2, 0.2, 0.2);
-            stack.apply();
+            planet.draw();
 
-            mesh.draw();
-            glPopMatrix(1);
-
-            planet.step(1.0f / 60);
-
-            for(auto& interaction : planets) {
-                if(interaction != planet) {
-                    Planet::vec3 dir = planet.pos - interaction.pos;
-
-                    auto F = (planet.mass * interaction.mass) / dir.sqr_magnitude();
-                    auto force = dir.normalized() * F;
-                    interaction.add_force(force);
-                }
-            }
-                    
+            planet.update();
+            for(auto& other : planets)
+                if(other != planet)
+                    other.attract(planet);       
         }
 
         glFlush(0);

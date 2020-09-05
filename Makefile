@@ -24,7 +24,7 @@ INCLUDES	:=	include build
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
-CFLAGS	:=	-g -Wall -Wno-volatile -O2\
+CFLAGS	:=	-g -Wall -Wno-volatile -Wno-narrowing -O2\
  			-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
 			-ffast-math \
 			$(ARCH)

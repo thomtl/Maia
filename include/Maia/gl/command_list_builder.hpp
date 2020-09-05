@@ -68,7 +68,7 @@ namespace gl::packets {
 	static_assert(sizeof(colour_packet) == 2 * sizeof(uint32_t));
 
 	struct [[gnu::packed]] normal_packet {
-		normal_packet(v10 x, v10 y, v10 z): cmd{0x21}, x{x}, y{y}, z{z} {}
+		normal_packet(v10 x, v10 y, v10 z): cmd{0x21}, x{(uint32_t)x}, y{(uint32_t)y}, z{(uint32_t)z} {}
 		normal_packet(const v10 n[3]) : normal_packet{n[0], n[1], n[2]} {}
 
 		uint32_t cmd;
