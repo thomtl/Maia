@@ -42,6 +42,12 @@ namespace gl
             return *this;
         }
 
+        MatrixStack& scale(float x, float y, float z) {
+            cmd.append(gl::packets::mtx_scale_packet{(uint32_t)floattof32(x), (uint32_t)floattof32(y), (uint32_t)floattof32(z)});
+
+            return *this;
+        }
+
         MatrixStack& mult_3x3(const m3x3& m) {
             cmd.append(gl::packets::mtx_mult_3x3_packet{m});
 

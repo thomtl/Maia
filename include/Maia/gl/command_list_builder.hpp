@@ -67,6 +67,20 @@ namespace gl::packets {
 	};
 	static_assert(sizeof(colour_packet) == 2 * sizeof(uint32_t));
 
+	struct [[gnu::packed]] normal_packet {
+		normal_packet(v10 x, v10 y, v10 z): cmd{0x21}, x{x}, y{y}, z{z} {}
+		normal_packet(const v10 n[3]) : normal_packet{n[0], n[1], n[2]} {}
+
+		uint32_t cmd;
+		struct {
+			uint32_t x : 10;
+			uint32_t y : 10;
+			uint32_t z : 10;
+			uint32_t reserved : 2;
+		};
+	};
+	static_assert(sizeof(normal_packet) == 2 * sizeof(uint32_t));
+
 	struct [[gnu::packed]] vtx_16_packet {
 		vtx_16_packet(v16 x, v16 y, v16 z): cmd{0x23}, x{(uint16_t)x}, y{(uint16_t)y}, z{(uint16_t)z} {}
 		vtx_16_packet(const v16 v[3]): vtx_16_packet{v[0], v[1], v[2]} {}
@@ -136,6 +150,14 @@ namespace gl::packets {
 		uint32_t x, y, z;
 	};
 	static_assert(sizeof(mtx_translation_packet) == 4 * sizeof(uint32_t));
+
+	struct [[gnu::packed]] mtx_scale_packet {
+		mtx_scale_packet(uint32_t x, uint32_t y, uint32_t z): cmd{0x1B}, x{x}, y{y}, z{z} {}
+
+		uint32_t cmd;
+		uint32_t x, y, z;
+	};
+	static_assert(sizeof(mtx_scale_packet) == 4 * sizeof(uint32_t));
 
 	struct [[gnu::packed]] mtx_mult_4x4_packet {
 		mtx_mult_4x4_packet(): cmd{0x18} {}

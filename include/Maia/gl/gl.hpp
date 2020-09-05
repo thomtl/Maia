@@ -23,6 +23,7 @@ namespace gl {
 
     struct Vertex {
         v16 v[3];
+        v10 n[3];
         uint8_t c[3];
     };
 
@@ -32,8 +33,9 @@ namespace gl {
 
             for(const auto& vertex : vertices){
                 //auto float_to_v16 = [](float v) -> uint16_t { return ((uint16_t)((v) * (1 << 12))); };
-                cmd.append(gl::packets::colour_packet{vertex.c});
-                cmd.append(gl::packets::vtx_16_packet{vertex.v});
+                //cmd.append(gl::packets::colour_packet{vertex.c});
+                cmd.append(gl::packets::normal_packet{vertex.n});
+                cmd.append(gl::packets::vtx_16_packet{vertex.v});  
             }
 
             // Technically not needed, but might be a good idea, libnds says it can cause problems?
