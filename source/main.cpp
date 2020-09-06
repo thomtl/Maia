@@ -1,5 +1,5 @@
 #include <Maia/common.hpp>
-
+#include <Maia/al/al.hpp>
 #include <Maia/gl/gl.hpp>
 #include <Maia/planet.hpp>
 
@@ -9,6 +9,9 @@
 #include <Maia/bmp_parser.hpp>
 
 #include <Maia/gl/camera.hpp>
+
+#include <Maia/planet_texture.h>
+#include <soundbank.h>
 
 gl::Mesh make_planet(const gl::Texture& tex) {
     const par_octasphere_config cfg = {
@@ -57,8 +60,6 @@ gl::Mesh make_planet(const gl::Texture& tex) {
     return gl::Mesh{mesh_vertices, tex};
 }
 
-#include <Maia/planet_texture.h>
-
 int main() {
     consoleDemoInit();
 
@@ -73,6 +74,12 @@ int main() {
     if(is_dsi) {
         printf("hw: SCFG Locked: %d\n", !((REG_SCFG_EXT >> 31) & 1));
     }
+
+    printf("al: Initializing AL ... ");
+    al::init();
+    al::Module theme{MOD_REZ_MONDAY};
+    theme.volume(100).start(true);
+    printf("\x1b[32;1mDone\x1b[37;1m\n");
     
     printf("gl: Initializing GL ... ");
     gl::init();
