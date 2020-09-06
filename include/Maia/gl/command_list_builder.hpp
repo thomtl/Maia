@@ -81,6 +81,18 @@ namespace gl::packets {
 	};
 	static_assert(sizeof(normal_packet) == 2 * sizeof(uint32_t));
 
+	struct [[gnu::packed]] texcoord_packet {
+		texcoord_packet(t16 s, t16 t): cmd{0x22}, s{(uint32_t)s}, t{(uint32_t)t} {}
+		texcoord_packet(const t16 u[2]) : texcoord_packet{u[0], u[1]} {}
+
+		uint32_t cmd;
+		struct {
+			uint32_t s : 16;
+			uint32_t t : 16;
+		};
+	};
+	static_assert(sizeof(texcoord_packet) == 2 * sizeof(uint32_t));
+
 	struct [[gnu::packed]] vtx_16_packet {
 		vtx_16_packet(v16 x, v16 y, v16 z): cmd{0x23}, x{(uint16_t)x}, y{(uint16_t)y}, z{(uint16_t)z} {}
 		vtx_16_packet(const v16 v[3]): vtx_16_packet{v[0], v[1], v[2]} {}

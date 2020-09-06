@@ -4,7 +4,7 @@ void gl::init(){
     videoSetMode(MODE_0_3D);
     glInit();
 
-    gl::enable(GL_ANTIALIAS);
+    gl::enable(GL_TEXTURE_2D, GL_ANTIALIAS);
 
     glClearColor(0, 0, 0, 31);
     glClearPolyID(63);

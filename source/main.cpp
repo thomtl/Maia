@@ -6,7 +6,9 @@
 #define PAR_OCTASPHERE_IMPLEMENTATION
 #include <Maia/3rdparty/octasphere.h>
 
-gl::Mesh make_planet() {
+#include <Maia/bmp_parser.hpp>
+
+gl::Mesh make_planet(const Texture& tex) {
     const par_octasphere_config cfg = {
         .corner_radius = 5,
         .width = 0,
@@ -22,9 +24,10 @@ gl::Mesh make_planet() {
     uint32_t num_vertices;
     par_octasphere_get_counts(&cfg, &num_indices, &num_vertices);
     
-    std::vector<float> vertices, normals;
+    std::vector<float> vertices, normals, uvs;
     vertices.resize(num_vertices * 3);
     normals.resize(num_vertices * 3);
+    uvs.resize(num_vertices * 2);
 
     std::vector<uint16_t> indices;
     indices.resize(num_indices);
@@ -32,6 +35,7 @@ gl::Mesh make_planet() {
     par_octasphere_mesh mesh = {
         .positions = vertices.data(),
         .normals = normals.data(),
+        .texcoords = uvs.data(),
         .indices = indices.data(),
         .num_indices = 0,
         .num_vertices = 0
@@ -43,12 +47,15 @@ gl::Mesh make_planet() {
     std::vector<gl::Vertex> mesh_vertices{};
 
     for(auto i : indices)
-        mesh_vertices.push_back({{floattov16(vertices[3 * i]), floattov16(vertices[3 * i + 1]), floattov16(vertices[3 * i + 2])}, 
-                                 {floattov10(normals[3 * i]), floattov10(normals[3 * i + 1]), floattov10(normals[3 * i + 2])},
+        mesh_vertices.push_back({{vertices[3 * i], vertices[3 * i + 1], vertices[3 * i + 2]}, 
+                                 {normals[3 * i], normals[3 * i + 1], normals[3 * i + 2]},
+                                 {uvs[2 * i], uvs[2 * i + 1]},
                                  {255, 255, 255}});
 
-    return gl::Mesh{mesh_vertices};
+    return gl::Mesh{mesh_vertices, tex};
 }
+
+#include <Maia/planet_texture.h>
 
 int main() {
     auto* console = consoleDemoInit();
@@ -80,17 +87,25 @@ int main() {
 
     glMaterialShinyness();
 
-    glColor3b(255, 255, 255);
+    //glColor3b(255, 255, 255);
     printf("\u001b[32;1mDone\u001b[37;1m\n");
 
-    auto mesh = make_planet();
+    bmp::BmpParser parser{planet_texture_bin};
+    std::vector<rgb> fb{};
+    for(auto& v : parser.fb)
+        fb.push_back(RGB8(v.x, v.y, v.z));
+    auto [width, height] = parser.dimensions;
+
+    Texture texture{width, height, (const uint8_t*)fb.data()};
+
+    auto mesh = make_planet(texture);
 
     Planet a{mesh};
-    a.colour = {0xf9, 0x90, 0x6f};
+    a.colour = {255, 255, 255};//{0xf9, 0x90, 0x6f};
     a.mass = 1000;
 
     Planet b{mesh};
-    b.colour = {0x00, 0x71, 0xc5};
+    b.colour = {255, 255, 255};//{0x00, 0x71, 0xc5};
     b.pos = {-10, 0, 0};
     b.vel = {0, 10, 0};
     b.mass = 1;
@@ -110,6 +125,7 @@ int main() {
 
         if(keys & KEY_R) fov -= 0.5;
         if(keys & KEY_L) fov += 0.5;
+        fov = std::clamp(fov, 2.0f, 100.0f);
         
         gl::MatrixStack s{};
         s.mode(GL_PROJECTION).identity().perspective(fov, 256.0 / 192.0, 0.1, 4000);

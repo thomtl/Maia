@@ -27,11 +27,13 @@ struct Planet : public PhysicsObject {
         this->step(1.0f / 60);
     }
 
-    void attract(Planet& to){        
+    void attract(Planet& to){
+        constexpr float G = 1; // Gravitational constant
+
         auto dir = pos - to.pos;
 
-        auto F = (mass * to.mass) / dir.sqr_magnitude();
-        auto force = dir.normalized() * F;
+        auto f = G * ((mass * to.mass) / dir.sqr_magnitude());
+        auto force = dir.normalized() * f;
         to.add_force(force);
     }
 
