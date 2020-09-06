@@ -56,7 +56,7 @@ namespace gl {
     }; 
 
     struct Mesh {
-        Mesh(const std::vector<Vertex>& vertices, const Texture& texture): texture{texture} {
+        Mesh(const std::vector<Vertex>& vertices, const gl::Texture& texture): texture{texture} {
             cmd.append(gl::packets::begin_vtxs_packet{GL_TRIANGLES});
             auto [width, height] = texture.dimensions();
             auto width_transform = (8 << (log2i(width) - 3));
@@ -81,7 +81,7 @@ namespace gl {
             cmd.execute();
         }
 
-        const Texture& texture;
+        const gl::Texture& texture;
         cmdlist cmd{};
     };
 }

@@ -8,7 +8,9 @@
 
 #include <Maia/bmp_parser.hpp>
 
-gl::Mesh make_planet(const Texture& tex) {
+#include <Maia/gl/camera.hpp>
+
+gl::Mesh make_planet(const gl::Texture& tex) {
     const par_octasphere_config cfg = {
         .corner_radius = 5,
         .width = 0,
@@ -58,13 +60,15 @@ gl::Mesh make_planet(const Texture& tex) {
 #include <Maia/planet_texture.h>
 
 int main() {
-    auto* console = consoleDemoInit();
+    consoleDemoInit();
+
+    printf("\x1b[2;0H--------------------------------\n");
 
     bool is_dsi = (REG_SCFG_ROM & 3) == 1;
     if(is_dsi)
-        printf("hw: Running on a \u001b[36;1mDSi\u001b[37;1m\n");
+        printf("hw: Running on a \x1b[36;1mDSi\x1b[37;1m\n");
     else
-        printf("hw: Running on a \u001b[36;1mDS\u001b[37;1m\n");
+        printf("hw: Running on a \x1b[36;1mDS\x1b[37;1m\n");
 
     if(is_dsi) {
         printf("hw: SCFG Locked: %d\n", !((REG_SCFG_EXT >> 31) & 1));
@@ -88,7 +92,7 @@ int main() {
     glMaterialShinyness();
 
     //glColor3b(255, 255, 255);
-    printf("\u001b[32;1mDone\u001b[37;1m\n");
+    printf("\x1b[32;1mDone\x1b[37;1m\n");
 
     bmp::BmpParser parser{planet_texture_bin};
     std::vector<rgb> fb{};
@@ -96,40 +100,61 @@ int main() {
         fb.push_back(RGB8(v.x, v.y, v.z));
     auto [width, height] = parser.dimensions;
 
-    Texture texture{width, height, (const uint8_t*)fb.data()};
+    gl::Texture texture{width, height, (const uint8_t*)fb.data()};
 
     auto mesh = make_planet(texture);
 
-    Planet a{mesh};
+    Planet a{"Sirius 1", "Warning: Quarantine World", mesh};
     a.colour = {255, 255, 255};//{0xf9, 0x90, 0x6f};
     a.mass = 1000;
 
-    Planet b{mesh};
+    Planet b{"Sirius 2", "Moon bumbling with small animals", mesh};
     b.colour = {255, 255, 255};//{0x00, 0x71, 0xc5};
     b.pos = {-10, 0, 0};
     b.vel = {0, 10, 0};
-    b.mass = 1;
+    b.mass = 10;
 
     std::vector<Planet> planets = {std::move(a), std::move(b)};
+    gl::Camera camera{};
 
-    float x = 0, fov = 70;
+    size_t curr_planet = 0;
+
+    float fov = 70;
     while(true){
         scanKeys();
-        auto keys = keysHeld();
+                         
+        printf("\x1b[0;0H                                \n"); // Clear line
+        printf("\x1b[1;0H                                \n"); // Clear line
+        printf("\x1b[0;0H[%s] Mass: %d\n", planets[curr_planet].name, planets[curr_planet].mass);
+        printf("\x1b[1;0H%s\n", planets[curr_planet].description);
+        camera.set_center(planets[curr_planet].pos);
 
-        if(keys & KEY_START)
+        auto keys_down = keysDown();
+        if(keys_down & KEY_UP){
+            if(curr_planet == planets.size() - 1)
+                curr_planet = 0;
+            else
+                curr_planet++;
+        }
+        if(keys_down & KEY_DOWN){
+            if(curr_planet == 0)
+                curr_planet = planets.size() - 1;
+            else
+                curr_planet--;
+        }
+
+        auto keys_held = keysHeld();
+        if(keys_held & KEY_START)
             break;
 
-        if(keys & KEY_LEFT) x -= 1;
-        if(keys & KEY_RIGHT) x += 1;
-
-        if(keys & KEY_R) fov -= 0.5;
-        if(keys & KEY_L) fov += 0.5;
+        if(keys_held & KEY_R) fov -= 0.5;
+        if(keys_held & KEY_L) fov += 0.5;
         fov = std::clamp(fov, 2.0f, 100.0f);
+
+        camera.update();
         
         gl::MatrixStack s{};
         s.mode(GL_PROJECTION).identity().perspective(fov, 256.0 / 192.0, 0.1, 4000);
-        s.mode(GL_MODELVIEW).identity().look_at({sin(x * 0.1) * 20, 5, cos(x * 0.1) * 20}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
         s.apply();
 
         for(auto& planet : planets) {

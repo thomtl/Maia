@@ -6,7 +6,8 @@
 #include <Maia/gl/gl.hpp>
 
 struct Planet : public PhysicsObject {
-    Planet(gl::Mesh& mesh): PhysicsObject{}, mesh{&mesh}, colour{255, 255, 255} {}
+    Planet(const char* name, const char* description, gl::Mesh& mesh): PhysicsObject{}, name{name}, description{description}, mesh{&mesh}, colour{255, 255, 255} {}
+    const char* name, *description;
     gl::Mesh* mesh;
     vec3<uint8_t> colour;
 

@@ -33,8 +33,7 @@ namespace bmp
             header = (const Header*)data;
 
             printf("bmp: Header ID: %c%c\n", header->id[0], header->id[1]);
-            printf("     Size: %ld\n", header->size);
-            printf("     Pixels: %ld\n", header->pixel_offset);
+            printf("     Size: %ld bytes\n", header->size);
 
             infoheader = (const InfoHeader*)(header + 1);
             printf("     Res: %ldx%ldx%d\n", infoheader->width, infoheader->height, infoheader->bpp);
@@ -49,8 +48,8 @@ namespace bmp
             pixels = (const uint32_t*)(data + header->pixel_offset);
 
             auto row_size = (infoheader->bpp * infoheader->width + 31) / 32 * 4;
-            for(size_t x = 0; x < infoheader->width; x++) {
-                for(size_t y = 0; y < infoheader->height; y++) {
+            for(int32_t x = 0; x < infoheader->width; x++) {
+                for(int32_t y = 0; y < infoheader->height; y++) {
                     auto pixel = pixels[(row_size * (infoheader->height - 1 - y) + x * infoheader->bpp / 8) / 4];
                     auto& dest = fb[y * infoheader->width + x];
                     
