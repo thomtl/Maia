@@ -7,13 +7,14 @@
 
 struct Planet : public PhysicsObject {
     Planet(const char* name, const char* description, gl::Mesh& mesh): PhysicsObject{}, name{name}, description{description}, mesh{&mesh}, colour{255, 255, 255} {}
+    size_t radius;
     const char* name, *description;
     gl::Mesh* mesh;
     vec3<uint8_t> colour;
 
     void draw(){
         gl::MatrixStack stack{};
-        stack.mode(GL_MODELVIEW).push().translate(this->pos.x, this->pos.y, this->pos.z).scale(0.2, 0.2, 0.2);
+        stack.mode(GL_MODELVIEW).push().translate(this->pos.x, this->pos.y, this->pos.z).scale(0.01 * radius, 0.01 * radius, 0.01 * radius);
         stack.apply();
         
         glMaterialf(GL_AMBIENT, RGB15((this->colour.x >> 3) / 10, (this->colour.y >> 3) / 10, (this->colour.z >> 3) / 10));

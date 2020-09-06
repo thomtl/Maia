@@ -62,7 +62,7 @@ gl::Mesh make_planet(const gl::Texture& tex) {
 int main() {
     consoleDemoInit();
 
-    printf("\x1b[2;0H--------------------------------\n");
+    printf("\x1b[2;0H--------------------------------");
 
     bool is_dsi = (REG_SCFG_ROM & 3) == 1;
     if(is_dsi)
@@ -104,17 +104,27 @@ int main() {
 
     auto mesh = make_planet(texture);
 
-    Planet a{"Sirius 1", "Warning: Quarantine World", mesh};
+    Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", mesh};
+    a.pos = {0, 0, 0};
     a.colour = {255, 255, 255};//{0xf9, 0x90, 0x6f};
     a.mass = 1000;
+    a.radius = 20;
 
-    Planet b{"Sirius 2", "Moon bumbling with small animals", mesh};
+    Planet b{"Sirius 1a", "Small moon bumbling with animals", mesh};
     b.colour = {255, 255, 255};//{0x00, 0x71, 0xc5};
-    b.pos = {-10, 0, 0};
-    b.vel = {0, 10, 0};
+    b.pos = {10, 0, 0};
+    b.vel = {0, 0, -10};
     b.mass = 10;
+    b.radius = 10;
 
-    std::vector<Planet> planets = {std::move(a), std::move(b)};
+    Planet c{"Sirius 1b", "High-Metal Concentration world", mesh};
+    c.colour = {255, 255, 255};//{0x00, 0x71, 0xc5};
+    c.pos = {5, 0, 0};
+    c.vel = {0, 0, 15};
+    c.mass = 5;
+    c.radius = 10;
+
+    std::vector<Planet> planets = {std::move(a), std::move(b), std::move(c)};
     gl::Camera camera{};
 
     size_t curr_planet = 0;
@@ -125,7 +135,7 @@ int main() {
                          
         printf("\x1b[0;0H                                \n"); // Clear line
         printf("\x1b[1;0H                                \n"); // Clear line
-        printf("\x1b[0;0H[%s] Mass: %d\n", planets[curr_planet].name, planets[curr_planet].mass);
+        printf("\x1b[0;0H[%s] Mass: %d Radius: %d\n", planets[curr_planet].name, planets[curr_planet].mass, planets[curr_planet].radius);
         printf("\x1b[1;0H%s\n", planets[curr_planet].description);
         camera.set_center(planets[curr_planet].pos);
 
