@@ -29,7 +29,7 @@ BUILD    := build
 SOURCES  := source source/math
 INCLUDES := include
 DATA     := data
-GRAPHICS :=
+GRAPHICS := data/graphics
 AUDIO    := data/audio
 ICON     :=
 

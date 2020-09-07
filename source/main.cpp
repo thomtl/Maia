@@ -6,11 +6,9 @@
 #define PAR_OCTASPHERE_IMPLEMENTATION
 #include <Maia/3rdparty/octasphere.h>
 
-#include <Maia/bmp_parser.hpp>
-
 #include <Maia/gl/camera.hpp>
 
-#include <Maia/planet_texture.h>
+#include <planet_texture.h>
 #include <soundbank.h>
 
 gl::Mesh make_planet(const gl::Texture& tex) {
@@ -66,10 +64,7 @@ int main() {
     printf("\x1b[2;0H--------------------------------");
 
     bool is_dsi = (REG_SCFG_ROM & 3) == 1;
-    if(is_dsi)
-        printf("hw: Running on a \x1b[36;1mDSi\x1b[37;1m\n");
-    else
-        printf("hw: Running on a \x1b[36;1mDS\x1b[37;1m\n");
+    printf("hw: Running on a \x1b[36;1m%s\x1b[37;1m\n", is_dsi ? "DSi" : "DS");
 
     if(is_dsi) {
         printf("hw: SCFG Locked: %d\n", !((REG_SCFG_EXT >> 31) & 1));
@@ -84,33 +79,20 @@ int main() {
     printf("gl: Initializing GL ... ");
     gl::init();
 
-    gl::MatrixStack setup_stack{};
-    setup_stack.mode(GL_PROJECTION).identity();
-    setup_stack.mode(GL_MODELVIEW).identity();
-    setup_stack.mode(GL_TEXTURE).identity();
-    setup_stack.mode(GL_POSITION).identity();
-    setup_stack.mode(GL_MODELVIEW).apply();
-
     glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT1);
-
     glLight(0, RGB15(16,16,16) , 0,		floattov10(-1.0),		0);
 	glLight(1, RGB15(16,16,16),   floattov10(1.0) - 1,	0,		0);
+    glColor3b(255, 255, 255);
 
-    glMaterialShinyness();
-
-    //glColor3b(255, 255, 255);
+    gl::Camera camera{};
     printf("\x1b[32;1mDone\x1b[37;1m\n");
 
-    bmp::BmpParser parser{planet_texture_bin};
-    std::vector<rgb> fb{};
-    for(auto& v : parser.fb)
-        fb.push_back(RGB8(v.x, v.y, v.z));
-    auto [width, height] = parser.dimensions;
+    printf("sim: Loading simulation ... ");
 
-    gl::Texture texture{width, height, (const uint8_t*)fb.data()};
-
+    gl::Texture texture{128, 128, (const uint8_t*)planet_textureBitmap}; // TODO: Don't hardcode size in some way
     auto mesh = make_planet(texture);
 
+    // TODO: Some kind of Proc-gen?
     Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", mesh};
     a.pos = {0, 0, 0};
     a.colour = {255, 255, 255};//{0xf9, 0x90, 0x6f};
@@ -132,9 +114,8 @@ int main() {
     c.radius = 10;
 
     std::vector<Planet> planets = {std::move(a), std::move(b), std::move(c)};
-    gl::Camera camera{};
-
     size_t curr_planet = 0;
+    printf("\x1b[32;1mDone\x1b[37;1m\n");
 
     float fov = 70;
     while(true){
@@ -147,13 +128,13 @@ int main() {
         camera.set_center(planets[curr_planet].pos);
 
         auto keys_down = keysDown();
-        if(keys_down & KEY_UP){
+        if(keys_down & KEY_R){
             if(curr_planet == planets.size() - 1)
                 curr_planet = 0;
             else
                 curr_planet++;
         }
-        if(keys_down & KEY_DOWN){
+        if(keys_down & KEY_L){
             if(curr_planet == 0)
                 curr_planet = planets.size() - 1;
             else
@@ -164,8 +145,8 @@ int main() {
         if(keys_held & KEY_START)
             break;
 
-        if(keys_held & KEY_R) fov -= 0.5;
-        if(keys_held & KEY_L) fov += 0.5;
+        if(keys_held & KEY_UP) fov -= 0.5;
+        if(keys_held & KEY_DOWN) fov += 0.5;
         fov = std::clamp(fov, 2.0f, 100.0f);
 
         camera.update();

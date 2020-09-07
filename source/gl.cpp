@@ -12,5 +12,14 @@ void gl::init(){
 
     glViewport(0, 0, 255, 191);
 
+    glMaterialShinyness();
+
     vramSetBankA(VRAM_A_TEXTURE);
+
+    MatrixStack setup_stack{};
+    setup_stack.mode(GL_PROJECTION).identity();
+    setup_stack.mode(GL_TEXTURE).identity();
+    setup_stack.mode(GL_POSITION).identity();
+    setup_stack.mode(GL_MODELVIEW).identity();
+    setup_stack.apply();
 }
