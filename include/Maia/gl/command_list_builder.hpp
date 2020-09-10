@@ -216,7 +216,7 @@ namespace gl::packets {
 
 namespace gl {
 	struct cmdlist {
-		cmdlist(): buffer{} {
+		cmdlist(): buffer{}, updated{true} {
 			buffer.push_back(0); // Reserve space for command count
 			buffer.push_back(0);
 			buffer.push_back(0);
@@ -228,21 +228,39 @@ namespace gl {
 
 			for (size_t i = 0; i < sizeof(packet); i++)
 				buffer.push_back(*data++);
+
+			updated = true;
 		}
 
-		const uint32_t* construct() {
-			size_t n = (buffer.size() - 4) / 4; // Amount of dwords without the lead dword
+		void execute() {
+			/*
+				Taking the advice of glCallList here, to do it ourselves and only flush the region if something changed
+				Equivalent API call: glCallList((const uint32_t *)buffer.data());
+				Code here is mostly just taken from libnds
+			*/
 
-			auto *data = (uint32_t *)buffer.data();
-			*data = n;
+			sassert(buffer.size() != 0, "Trying to execute 0 sized command buffer");
+			size_t count = buffer.size() / 4;
 
-			return data;
-		}
 
-		void execute() const {
-			glCallList((const uint32_t *)buffer.data());
+			// Flush the area that we are going to DMA if it was updated since last execution
+			if(updated) {
+				DC_FlushRange(buffer.data(), buffer.size());
+				updated = false;
+			}
+
+			// Don't start DMAing while anything else is being DMAed because FIFO DMA is touchy as hell
+			// If anyone can explain this better that would be great. -- gabebear
+			while((DMA_CR(0) & DMA_BUSY)||(DMA_CR(1) & DMA_BUSY)||(DMA_CR(2) & DMA_BUSY)||(DMA_CR(3) & DMA_BUSY));
+
+			// send the packed list asynchronously via DMA to the FIFO
+			DMA_SRC(0) = (u32)buffer.data();
+			DMA_DEST(0) = 0x4000400;
+			DMA_CR(0) = DMA_FIFO | count;
+			while(DMA_CR(0) & DMA_BUSY);
 		}
 
 		std::vector<uint8_t> buffer;
+		bool updated;
 	};
 } // namespace gl

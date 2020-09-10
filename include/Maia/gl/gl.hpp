@@ -79,8 +79,6 @@ namespace gl {
 
             // Technically not needed, but might be a good idea, libnds says it can cause problems?
             cmd.append(gl::packets::end_vtxs_packet{});
-
-            cmd.construct();
         }
 
         void draw(){

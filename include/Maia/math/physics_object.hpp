@@ -4,8 +4,8 @@
 #include <Maia/math/vec3.hpp>
 
 struct PhysicsObject {
-    PhysicsObject(): pos{}, vel{}, acc{}, mass{} {}
-    vec3<float> pos, vel, acc;
+    PhysicsObject(): pos{}, vel{}, mass{}, acc{} {}
+    vec3<float> pos, vel;
     size_t mass;
 
     void step(float dt){
@@ -19,4 +19,7 @@ struct PhysicsObject {
     }
 
     auto operator<=>(const PhysicsObject&) const = default;
+
+    private:
+    vec3<float> acc; // Not a user changable element, just useful for keeping track of forces on the object each step
 };

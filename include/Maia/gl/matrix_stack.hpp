@@ -142,7 +142,6 @@ namespace gl
         }
 
         void apply(){
-            cmd.construct();
             cmd.execute();
         }
 
