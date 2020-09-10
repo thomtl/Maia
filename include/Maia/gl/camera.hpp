@@ -18,12 +18,8 @@ namespace gl {
             eye = {sin(x * 0.1) * 20, 5, cos(x * 0.1) * 20};
 
             gl::MatrixStack s{};
-            s.mode(GL_MODELVIEW).identity().look_at({eye.x, eye.y, eye.z}, {center.x, center.y, center.z}, {0.0f, 1.0f, 0.0f});
+            s.mode(GL_MODELVIEW).identity().look_at(eye, center, {0.0f, 1.0f, 0.0f});
             s.apply();
-        }
-
-        void set_center(vec3<float> center){
-            this->center = center;
         }
 
         float x;

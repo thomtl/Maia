@@ -63,25 +63,21 @@ int main() {
 
     printf("\x1b[2;0H--------------------------------");
 
-    bool is_dsi = (REG_SCFG_ROM & 3) == 1;
+    bool is_dsi = isDSiMode();
     printf("hw: Running on a \x1b[36;1m%s\x1b[37;1m\n", is_dsi ? "DSi" : "DS");
-
-    if(is_dsi) {
-        printf("hw: SCFG Locked: %d\n", !((REG_SCFG_EXT >> 31) & 1));
-    }
 
     printf("al: Initializing AL ... ");
     al::init();
-    al::Module theme{MOD_REZ_MONDAY};
+    al::Module theme{MOD_MONDAY};
     theme.volume(100).start(true);
     printf("\x1b[32;1mDone\x1b[37;1m\n");
     
     printf("gl: Initializing GL ... ");
     gl::init();
 
-    glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT1);
-    glLight(0, RGB15(16,16,16) , 0,		floattov10(-1.0),		0);
-	glLight(1, RGB15(16,16,16),   floattov10(1.0) - 1,	0,		0);
+    glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT0 | POLY_FORMAT_LIGHT1);
+    glLight(0, RGB15(16,16,16), 0, floattov10(-1.0), 0);
+	glLight(1, RGB15(16,16,16), floattov10(1.0) - 1, 0,	0);
     glColor3b(255, 255, 255);
 
     gl::Camera camera{};
@@ -95,23 +91,23 @@ int main() {
     // TODO: Some kind of Proc-gen?
     Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", mesh};
     a.pos = {0, 0, 0};
-    a.colour = {255, 255, 255};//{0xf9, 0x90, 0x6f};
+    a.colour = {255, 255, 255};
     a.mass = 1000;
-    a.radius = 20;
+    a.scale = 20;
 
     Planet b{"Sirius 1a", "Small moon bumbling with animals", mesh};
-    b.colour = {255, 255, 255};//{0x00, 0x71, 0xc5};
+    b.colour = {255, 255, 255};
     b.pos = {10, 0, 0};
     b.vel = {0, 0, -10};
     b.mass = 10;
-    b.radius = 10;
+    b.scale = 10;
 
     Planet c{"Sirius 1b", "High-Metal Concentration world", mesh};
-    c.colour = {255, 255, 255};//{0x00, 0x71, 0xc5};
+    c.colour = {255, 255, 255};
     c.pos = {5, 0, 0};
     c.vel = {0, 0, 15};
     c.mass = 5;
-    c.radius = 10;
+    c.scale = 10;
 
     std::vector<Planet> planets = {std::move(a), std::move(b), std::move(c)};
     size_t curr_planet = 0;
@@ -119,15 +115,17 @@ int main() {
 
     float fov = 70;
     while(true){
-        scanKeys();
-                         
         printf("\x1b[0;0H                                \n"); // Clear line
         printf("\x1b[1;0H                                \n"); // Clear line
-        printf("\x1b[0;0H[%s] Mass: %d Radius: %d\n", planets[curr_planet].name, planets[curr_planet].mass, planets[curr_planet].radius);
+        printf("\x1b[0;0H[%s] Mass: %d Scale: %d\n", planets[curr_planet].name, planets[curr_planet].mass, planets[curr_planet].scale);
         printf("\x1b[1;0H%s\n", planets[curr_planet].description);
-        camera.set_center(planets[curr_planet].pos);
 
+        scanKeys();
         auto keys_down = keysDown();
+        auto keys_held = keysHeld();
+        if(keys_held & KEY_START)
+            break;
+        
         if(keys_down & KEY_R){
             if(curr_planet == planets.size() - 1)
                 curr_planet = 0;
@@ -141,19 +139,16 @@ int main() {
                 curr_planet--;
         }
 
-        auto keys_held = keysHeld();
-        if(keys_held & KEY_START)
-            break;
-
         if(keys_held & KEY_UP) fov -= 0.5;
         if(keys_held & KEY_DOWN) fov += 0.5;
         fov = std::clamp(fov, 2.0f, 100.0f);
 
-        camera.update();
-        
         gl::MatrixStack s{};
         s.mode(GL_PROJECTION).identity().perspective(fov, 256.0 / 192.0, 0.1, 4000);
         s.apply();
+    
+        camera.center = planets[curr_planet].pos;
+        camera.update();
 
         for(auto& planet : planets) {
             planet.draw();

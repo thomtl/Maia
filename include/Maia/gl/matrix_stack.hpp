@@ -3,6 +3,8 @@
 #include <Maia/common.hpp>
 #include <Maia/gl/command_list_builder.hpp>
 
+#include <Maia/math/vec3.hpp>
+
 namespace gl
 {
     struct MatrixStack {
@@ -36,14 +38,14 @@ namespace gl
             return *this;
         }
     
-        MatrixStack& translate(float x, float y, float z) {
-            cmd.append(gl::packets::mtx_translation_packet{(uint32_t)floattof32(x), (uint32_t)floattof32(y), (uint32_t)floattof32(z)});
+        MatrixStack& translate(vec3<float> v) {
+            cmd.append(gl::packets::mtx_translation_packet{(uint32_t)floattof32(v.x), (uint32_t)floattof32(v.y), (uint32_t)floattof32(v.z)});
 
             return *this;
         }
 
-        MatrixStack& scale(float x, float y, float z) {
-            cmd.append(gl::packets::mtx_scale_packet{(uint32_t)floattof32(x), (uint32_t)floattof32(y), (uint32_t)floattof32(z)});
+        MatrixStack& scale(vec3<float> v) {
+            cmd.append(gl::packets::mtx_scale_packet{(uint32_t)floattof32(v.x), (uint32_t)floattof32(v.y), (uint32_t)floattof32(v.z)});
 
             return *this;
         }
@@ -113,7 +115,7 @@ namespace gl
             return *this;
         }
 
-        MatrixStack& look_at(const float (&eye)[3], const float (&center)[3], const float (&up)[3]) {
+        MatrixStack& look_at(const vec3<float>& eye, const vec3<float>& center, const vec3<float>& up) {
             auto compute = [this](int32_t eye[3], int32_t center[3], int32_t up[3]) {
                 int32_t forward[3] = {eye[0] - center[0], eye[1] - center[1], eye[2] - center[2]};
                 normalizef32(forward);
@@ -131,9 +133,9 @@ namespace gl
                 });
             };
 
-            int32_t eye_[3] = {floattof32(eye[0]), floattof32(eye[1]), floattof32(eye[2])};
-            int32_t center_[3] = {floattof32(center[0]), floattof32(center[1]), floattof32(center[2])};
-            int32_t up_[3] = {floattof32(up[0]), floattof32(up[1]), floattof32(up[2])};
+            int32_t eye_[3] = {floattof32(eye.x), floattof32(eye.y), floattof32(eye.z)};
+            int32_t center_[3] = {floattof32(center.x), floattof32(center.y), floattof32(center.z)};
+            int32_t up_[3] = {floattof32(up.x), floattof32(up.y), floattof32(up.z)};
             compute(eye_, center_, up_);
 
             return *this;

@@ -2,6 +2,9 @@
 
 #include <Maia/common.hpp>
 
+#include <Maia/math/vec3.hpp>
+#include <Maia/math/vec2.hpp>
+
 #include <vector>
 #include <algorithm>
 
@@ -55,7 +58,7 @@ namespace gl::packets {
 				printf("gl: Invalid colours [\u001b[31;1m%d \u001b[32;1m%d \u001b[34;1m%d\u001b[37;1m]\n", red, green, blue);
 		}
 
-		colour_packet(const uint8_t c[3]) : colour_packet{c[0], c[1], c[2]} {}
+		colour_packet(const vec3<uint8_t>& c) : colour_packet{c.x, c.y, c.z} {}
 
 		uint32_t cmd;
 		struct {
@@ -69,7 +72,7 @@ namespace gl::packets {
 
 	struct [[gnu::packed]] normal_packet {
 		normal_packet(v10 x, v10 y, v10 z): cmd{0x21}, x{(uint32_t)x}, y{(uint32_t)y}, z{(uint32_t)z} {}
-		normal_packet(const v10 n[3]) : normal_packet{n[0], n[1], n[2]} {}
+		normal_packet(const vec3<float> n) : normal_packet{floattov10(n.x), floattov10(n.y), floattov10(n.z)} {}
 
 		uint32_t cmd;
 		struct {
@@ -83,7 +86,7 @@ namespace gl::packets {
 
 	struct [[gnu::packed]] texcoord_packet {
 		texcoord_packet(t16 s, t16 t): cmd{0x22}, s{(uint32_t)s}, t{(uint32_t)t} {}
-		texcoord_packet(const t16 u[2]) : texcoord_packet{u[0], u[1]} {}
+		texcoord_packet(const vec2<float>& u) : texcoord_packet{floattot16(u.x), floattot16(u.y)} {}
 
 		uint32_t cmd;
 		struct {
@@ -95,7 +98,7 @@ namespace gl::packets {
 
 	struct [[gnu::packed]] vtx_16_packet {
 		vtx_16_packet(v16 x, v16 y, v16 z): cmd{0x23}, x{(uint16_t)x}, y{(uint16_t)y}, z{(uint16_t)z} {}
-		vtx_16_packet(const v16 v[3]): vtx_16_packet{v[0], v[1], v[2]} {}
+		vtx_16_packet(const vec3<float>& v): vtx_16_packet{floattov16(v.x), floattov16(v.y), floattov16(v.z)} {}
 
 		uint32_t cmd;
 		uint16_t x;
@@ -221,13 +224,13 @@ namespace gl {
 		}
 
 		void append(const packets::Packet auto &packet) {
-			const auto *data = reinterpret_cast<const uint8_t *>(&packet);
+			const auto *data = reinterpret_cast<const uint8_t*>(&packet);
 
 			for (size_t i = 0; i < sizeof(packet); i++)
 				buffer.push_back(*data++);
 		}
 
-		const uint32_t *construct() {
+		const uint32_t* construct() {
 			size_t n = (buffer.size() - 4) / 4; // Amount of dwords without the lead dword
 
 			auto *data = (uint32_t *)buffer.data();

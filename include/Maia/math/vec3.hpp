@@ -44,11 +44,11 @@ struct vec3 {
     }
 
     float sqr_magnitude(){
-        return (x * x) + (y* y) + (z * z);
+        return (x * x) + (y * y) + (z * z);
     }
 
     float magnitude(){
-        return sqrt((x * x) + (y* y) + (z * z));
+        return sqrt((x * x) + (y * y) + (z * z));
     }
 
     vec3 normalized(){
