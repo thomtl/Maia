@@ -58,8 +58,8 @@ namespace gl {
     }; 
 
     struct Mesh {
-        Mesh(const std::vector<Vertex>& vertices, const gl::Texture& texture): texture{texture} {
-            auto [width, height] = texture.dimensions();
+        Mesh(const std::vector<Vertex>& vertices, std::pair<size_t, size_t> texture_dimensions) {
+            auto [width, height] = texture_dimensions;
             auto width_transform = (8 << (log2i(width) - 3));
             auto height_transform = (8 << (log2i(height) - 3));
 
@@ -81,12 +81,11 @@ namespace gl {
             cmd.append(gl::packets::end_vtxs_packet{});
         }
 
-        void draw(){
-            ScopedBind guard{texture};
+        void draw(gl::Texture& tex){
+            ScopedBind guard{tex};
             cmd.execute();
         }
 
-        const gl::Texture& texture;
         cmdlist cmd{};
     };
 }

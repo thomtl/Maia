@@ -8,10 +8,11 @@
 
 #include <Maia/gl/camera.hpp>
 
+#include <moon_texture.h>
 #include <planet_texture.h>
 #include <soundbank.h>
 
-gl::Mesh make_planet(const gl::Texture& tex) {
+gl::Mesh make_planet(std::pair<size_t, size_t> tex_dimensions) {
     const par_octasphere_config cfg = {
         .corner_radius = 5,
         .width = 0,
@@ -55,7 +56,7 @@ gl::Mesh make_planet(const gl::Texture& tex) {
                                  {uvs[2 * i], uvs[2 * i + 1]},
                                  {255, 255, 255}});
 
-    return gl::Mesh{mesh_vertices, tex};
+    return gl::Mesh{mesh_vertices, tex_dimensions};
 }
 
 int main() {
@@ -85,24 +86,25 @@ int main() {
 
     printf("sim: Loading simulation ... ");
 
-    gl::Texture texture{128, 128, (const uint8_t*)planet_textureBitmap}; // TODO: Don't hardcode size in some way
-    auto mesh = make_planet(texture);
+    gl::Texture earthlike_texture{128, 128, (const uint8_t*)planet_textureBitmap}; // TODO: Don't hardcode size in some way
+    gl::Texture moon_texture{128, 128, (const uint8_t*)moon_textureBitmap};
+    auto mesh = make_planet({128, 128});
 
     // TODO: Some kind of Proc-gen?
-    Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", mesh};
+    Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", mesh, earthlike_texture};
     a.pos = {0, 0, 0};
     a.colour = {255, 255, 255};
     a.mass = 1000;
     a.scale = 20;
 
-    Planet b{"Sirius 1a", "Small moon bumbling with animals", mesh};
+    Planet b{"Sirius 1a", "Small moon bumbling with animals", mesh, earthlike_texture};
     b.colour = {255, 255, 255};
     b.pos = {10, 0, 0};
     b.vel = {0, 0, -10};
     b.mass = 10;
     b.scale = 10;
 
-    Planet c{"Sirius 1b", "High-Metal Concentration world", mesh};
+    Planet c{"Sirius 1b", "High-Metal Concentration world", mesh, moon_texture};
     c.colour = {255, 255, 255};
     c.pos = {5, 0, 0};
     c.vel = {0, 0, 15};

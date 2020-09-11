@@ -6,11 +6,14 @@
 #include <Maia/gl/gl.hpp>
 
 struct Planet : public PhysicsObject {
-    Planet(const char* name, const char* description, gl::Mesh& mesh): PhysicsObject{}, name{name}, description{description}, mesh{&mesh}, colour{255, 255, 255} {}
+    Planet(const char* name, const char* description, gl::Mesh& mesh, gl::Texture& texture): PhysicsObject{}, name{name}, description{description}, colour{255, 255, 255}, mesh{&mesh}, texture{&texture} {}
     size_t scale;
     const char* name, *description;
-    gl::Mesh* mesh;
     vec3<uint8_t> colour;
+
+    gl::Mesh* mesh;
+    gl::Texture* texture;
+
 
     void draw(){
         gl::MatrixStack stack{};
@@ -21,12 +24,12 @@ struct Planet : public PhysicsObject {
 	    glMaterialf(GL_DIFFUSE, RGB15(this->colour.x >> 3, this->colour.y >> 3, this->colour.z >> 3));
 	    glMaterialf(GL_SPECULAR, BIT(15) | RGB15((this->colour.x >> 3) / 4, (this->colour.y >> 3) / 4, (this->colour.z >> 3) / 4));
 
-        mesh->draw();
+        mesh->draw(*texture);
         glPopMatrix(1);
     }
 
     void update() {
-        this->step(1.0f / 60);
+        this->step(1.0f / 60); // DS framerate is fixed at 60fps, so 60 Hz is the correct dt
     }
 
     void attract(Planet& to){

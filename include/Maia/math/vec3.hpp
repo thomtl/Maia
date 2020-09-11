@@ -27,11 +27,11 @@ struct vec3 {
         return *this;
     }
 
-    vec3 operator*(T b){
+    vec3 operator*(T b) const {
         return {x * b, y * b, z * b};
     }
 
-    vec3 operator/(T b){
+    vec3 operator/(T b) const {
         return {x / b, y / b, z / b};
     }
 

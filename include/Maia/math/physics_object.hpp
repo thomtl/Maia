@@ -11,10 +11,11 @@ struct PhysicsObject {
     void step(float dt){
         vel += acc * dt;
         pos += vel * dt;
-        acc = {};
+
+        acc = {}; // Reset acc for the next timestep
     }
 
-    void add_force(vec3<float> f){
+    void add_force(const vec3<float>& f){
         acc += f / mass;
     }
 
