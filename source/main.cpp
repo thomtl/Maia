@@ -91,25 +91,22 @@ int main() {
     auto mesh = make_planet({128, 128});
 
     // TODO: Some kind of Proc-gen?
-    Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", mesh, earthlike_texture};
-    a.pos = {0, 0, 0};
+    Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", 20, mesh, earthlike_texture};
+    a.body.position = {0, 0, 0};
     a.colour = {255, 255, 255};
-    a.mass = 1000;
-    a.scale = 20;
+    a.body.mass = 1000;
 
-    Planet b{"Sirius 1a", "Small moon bumbling with animals", mesh, earthlike_texture};
+    Planet b{"Sirius 1a", "Small moon bumbling with animals", 10, mesh, earthlike_texture};
     b.colour = {255, 255, 255};
-    b.pos = {10, 0, 0};
-    b.vel = {0, 0, -10};
-    b.mass = 10;
-    b.scale = 10;
+    b.body.position = {10, 0, 0};
+    b.body.linear_velocity = {0, 0, -10};
+    b.body.mass = 10;
 
-    Planet c{"Sirius 1b", "High-Metal Concentration world", mesh, moon_texture};
+    Planet c{"Sirius 1b", "High-Metal Concentration world", 10, mesh, moon_texture};
     c.colour = {255, 255, 255};
-    c.pos = {5, 0, 0};
-    c.vel = {0, 0, 15};
-    c.mass = 5;
-    c.scale = 10;
+    c.body.position = {5, 0, 0};
+    c.body.linear_velocity = {0, 0, 15};
+    c.body.mass = 5;
 
     std::vector<Planet> planets = {std::move(a), std::move(b), std::move(c)};
     size_t curr_planet = 0;
@@ -119,7 +116,7 @@ int main() {
     while(true){
         printf("\x1b[0;0H                                \n"); // Clear line
         printf("\x1b[1;0H                                \n"); // Clear line
-        printf("\x1b[0;0H[%s] Mass: %d Scale: %d\n", planets[curr_planet].name, planets[curr_planet].mass, planets[curr_planet].scale);
+        printf("\x1b[0;0H[%s] Mass: %.0f Scale: %f\n", planets[curr_planet].name, planets[curr_planet].body.mass, planets[curr_planet].sphere.radius * 2);
         printf("\x1b[1;0H%s\n", planets[curr_planet].description);
 
         scanKeys();
@@ -149,7 +146,7 @@ int main() {
         s.mode(GL_PROJECTION).identity().perspective(fov, 256.0 / 192.0, 0.1, 4000);
         s.apply();
     
-        camera.center = planets[curr_planet].pos;
+        camera.center = planets[curr_planet].body.position;
         camera.update();
 
         for(auto& planet : planets) {

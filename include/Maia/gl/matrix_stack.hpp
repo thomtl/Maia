@@ -96,6 +96,20 @@ namespace gl
             return *this;
         }
 
+        MatrixStack& rotate_z(float a) {
+            int angle = (int)(a * DEGREES_IN_CIRCLE / 360.0);
+
+            int sine = sinLerp(angle);
+            int cosine = cosLerp(angle);
+            mult_3x3({
+                cosine, sine, 0,
+                -sine, cosine, 0,
+                0, 0, inttof32(1)
+            });
+
+            return *this;
+        }
+
         MatrixStack& perspective(float fov, float aspect, float z_near, float z_far) {
             int fovy = (int)(fov * DEGREES_IN_CIRCLE / 360.0);
 

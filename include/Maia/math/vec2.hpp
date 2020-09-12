@@ -14,7 +14,7 @@ struct vec2 {
         return *this;
     }
 
-    vec2 operator-(const vec2& b){
+    vec2 operator-(const vec2& b) const {
         return {x - b.x, y - b.y};
     }
 
@@ -25,11 +25,11 @@ struct vec2 {
         return *this;
     }
 
-    vec2 operator*(T b){
+    vec2 operator*(T b) const {
         return {x * b, y * b};
     }
 
-    vec2 operator/(T b){
+    vec2 operator/(T b) const {
         return {x / b, y / b};
     }
 
@@ -40,15 +40,15 @@ struct vec2 {
         return *this;
     }
 
-    float sqr_magnitude(){
+    float sqr_magnitude() const {
         return (x * x) + (y * y);
     }
 
-    float magnitude(){
+    float magnitude() const {
         return sqrt((x * x) + (y * y));
     }
 
-    vec2 normalized(){
+    vec2 normalized() const {
         auto mag = magnitude();
         return {x / mag, y / mag};
     }

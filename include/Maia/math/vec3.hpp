@@ -15,8 +15,12 @@ struct vec3 {
         return *this;
     }
 
-    vec3 operator-(const vec3& b){
+    vec3 operator-(const vec3& b) const {
         return {x - b.x, y - b.y, z - b.z};
+    }
+
+    vec3 operator+(const vec3& b) const {
+        return {x + b.x, y + b.y, z + b.z};
     }
 
     vec3& operator*=(T b){
@@ -43,17 +47,21 @@ struct vec3 {
         return *this;
     }
 
-    float sqr_magnitude(){
+    float sqr_magnitude() const {
         return (x * x) + (y * y) + (z * z);
     }
 
-    float magnitude(){
+    float magnitude() const {
         return sqrt((x * x) + (y * y) + (z * z));
     }
 
-    vec3 normalized(){
+    vec3 normalized() const {
         auto mag = magnitude();
-        return {x / mag, y / mag, z / mag};
+        return *this / mag;
+    }
+
+    vec3 cross(const vec3& b) const {
+        return {y * b.z - b.y * z, z * b.x - b.z * x, x * b.y - b.x * y};
     }
 
     auto operator<=>(const vec3&) const = default;
