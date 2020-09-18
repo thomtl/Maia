@@ -1,4 +1,7 @@
 #include <Maia/common.hpp>
+
+#include <Maia/hw.hpp>
+
 #include <Maia/al/al.hpp>
 #include <Maia/gl/gl.hpp>
 #include <Maia/planet.hpp>
@@ -64,16 +67,18 @@ int main() {
 
     printf("\x1b[2;0H--------------------------------");
 
-    bool is_dsi = isDSiMode();
-    printf("hw: Running on a \x1b[36;1m%s\x1b[37;1m\n", is_dsi ? "DSi" : "DS");
+    hw::init();
 
-    printf("al: Initializing AL ... ");
+    if(hw::quirks.geometry_dma)
+        printf("QUIRK QUIRK QUIRKC\n");
+
+    printf("al: Initializing AL -> ");
     al::init();
     al::Module theme{MOD_MONDAY};
     theme.volume(100).start(true);
-    printf("\x1b[32;1mDone\x1b[37;1m\n");
+    printf("\x1b[32;1mOK\x1b[37;1m\n");
     
-    printf("gl: Initializing GL ... ");
+    printf("gl: Initializing GL -> ");
     gl::init();
 
     glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT0 | POLY_FORMAT_LIGHT1);
@@ -82,9 +87,9 @@ int main() {
     glColor3b(255, 255, 255);
 
     gl::Camera camera{};
-    printf("\x1b[32;1mDone\x1b[37;1m\n");
+    printf("\x1b[32;1mOK\x1b[37;1m\n");
 
-    printf("sim: Loading simulation ... ");
+    printf("sim: Loading simulation -> ");
 
     gl::Texture earthlike_texture{128, 128, (const uint8_t*)planet_textureBitmap}; // TODO: Don't hardcode size in some way
     gl::Texture moon_texture{128, 128, (const uint8_t*)moon_textureBitmap};
@@ -110,13 +115,13 @@ int main() {
 
     std::vector<Planet> planets = {std::move(a), std::move(b), std::move(c)};
     size_t curr_planet = 0;
-    printf("\x1b[32;1mDone\x1b[37;1m\n");
+    printf("\x1b[32;1mOK\x1b[37;1m\n");
 
     float fov = 70;
     while(true){
         printf("\x1b[0;0H                                \n"); // Clear line
         printf("\x1b[1;0H                                \n"); // Clear line
-        printf("\x1b[0;0H[%s] Mass: %.0f Scale: %f\n", planets[curr_planet].name, planets[curr_planet].body.mass, planets[curr_planet].sphere.radius * 2);
+        printf("\x1b[0;0H[%s] Mass: %.0f Scale: %.0f\n", planets[curr_planet].name, planets[curr_planet].body.mass, planets[curr_planet].sphere.radius * 2);
         printf("\x1b[1;0H%s\n", planets[curr_planet].description);
 
         scanKeys();

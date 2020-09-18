@@ -2,6 +2,8 @@
 
 #include <Maia/common.hpp>
 
+#include <Maia/hw.hpp>
+
 #include <Maia/math/vec3.hpp>
 #include <Maia/math/vec2.hpp>
 
@@ -251,7 +253,14 @@ namespace gl {
 
 			// Don't start DMAing while anything else is being DMAed because FIFO DMA is touchy as hell
 			// If anyone can explain this better that would be great. -- gabebear
-			while((DMA_CR(0) & DMA_BUSY)||(DMA_CR(1) & DMA_BUSY)||(DMA_CR(2) & DMA_BUSY)||(DMA_CR(3) & DMA_BUSY));
+			// Fixed by DSi Revised DMA Circuit
+			if(hw::quirks.geometry_dma) {
+				while((DMA_CR(0) & DMA_BUSY) || (DMA_CR(1) & DMA_BUSY) || (DMA_CR(2) & DMA_BUSY) || (DMA_CR(3) & DMA_BUSY))
+					;
+			} else {
+				while(DMA_CR(0) & DMA_BUSY)
+					;
+			}
 
 			// send the packed list asynchronously via DMA to the FIFO
 			DMA_SRC(0) = (u32)buffer.data();
