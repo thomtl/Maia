@@ -1,6 +1,6 @@
 #include <Maia/common.hpp>
 
-#include <Maia/hw.hpp>
+#include <Maia/hw/hw.hpp>
 
 #include <Maia/al/al.hpp>
 #include <Maia/gl/gl.hpp>
@@ -66,11 +66,7 @@ int main() {
     consoleDemoInit();
 
     printf("\x1b[2;0H--------------------------------");
-
     hw::init();
-
-    if(hw::quirks.geometry_dma)
-        printf("QUIRK QUIRK QUIRKC\n");
 
     printf("al: Initializing AL -> ");
     al::init();

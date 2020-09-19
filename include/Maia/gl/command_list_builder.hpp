@@ -2,7 +2,8 @@
 
 #include <Maia/common.hpp>
 
-#include <Maia/hw.hpp>
+#include <Maia/hw/hw.hpp>
+#include <Maia/hw/ndma.hpp>
 
 #include <Maia/math/vec3.hpp>
 #include <Maia/math/vec2.hpp>
@@ -240,9 +241,8 @@ namespace gl {
 				Equivalent API call: glCallList((const uint32_t *)buffer.data());
 				Code here is mostly just taken from libnds
 			*/
-
+			
 			sassert(buffer.size() != 0, "Trying to execute 0 sized command buffer");
-			size_t count = buffer.size() / 4;
 
 
 			// Flush the area that we are going to DMA if it was updated since last execution
@@ -250,23 +250,47 @@ namespace gl {
 				DC_FlushRange(buffer.data(), buffer.size());
 				updated = false;
 			}
+			
+			auto dma = [this]{
+				// Don't start DMAing while anything else is being DMAed because FIFO DMA is touchy as hell, gets fixed by DSi Revised geometry circuit
+				// If anyone can explain this better that would be great. -- gabebear
+				if(hw::quirks.geometry_dma) {
+					while((DMA_CR(0) & DMA_BUSY) || (DMA_CR(1) & DMA_BUSY) || (DMA_CR(2) & DMA_BUSY) || (DMA_CR(3) & DMA_BUSY))
+						;
+				} else {
+					while(DMA_CR(0) & DMA_BUSY)
+						;
+				}
 
-			// Don't start DMAing while anything else is being DMAed because FIFO DMA is touchy as hell
-			// If anyone can explain this better that would be great. -- gabebear
-			// Fixed by DSi Revised DMA Circuit
-			if(hw::quirks.geometry_dma) {
-				while((DMA_CR(0) & DMA_BUSY) || (DMA_CR(1) & DMA_BUSY) || (DMA_CR(2) & DMA_BUSY) || (DMA_CR(3) & DMA_BUSY))
-					;
-			} else {
-				while(DMA_CR(0) & DMA_BUSY)
-					;
-			}
+				// send the packed list asynchronously via DMA to the FIFO
+				DMA_SRC(0) = (u32)buffer.data();
+				DMA_DEST(0) = 0x4000400;
+				DMA_CR(0) = DMA_FIFO | (buffer.size() / 4);
+				while(DMA_CR(0) & DMA_BUSY);
+			};
 
-			// send the packed list asynchronously via DMA to the FIFO
-			DMA_SRC(0) = (u32)buffer.data();
-			DMA_DEST(0) = 0x4000400;
-			DMA_CR(0) = DMA_FIFO | count;
-			while(DMA_CR(0) & DMA_BUSY);
+			auto ndma = [this]{
+				using namespace ndma;
+
+				Transfer transfer{};
+				transfer.startup_mode = 0x0A; // Geometry FIFO
+
+				transfer.src = (uint32_t)buffer.data();
+				transfer.src_inc = ndma::Transfer::IncementMode::Increment;
+
+				transfer.dst = 0x4000400;
+				transfer.dst_inc = ndma::Transfer::IncementMode::Fixed;
+
+				transfer.len = buffer.size();
+
+				ndma9.transfer_sync(transfer);
+			};
+
+			constexpr bool use_ndma = false; // Currently we cannot use NDMA since no$gba doesn't support Geometry FIFO start mode
+			if (hw::features.ndma && use_ndma)
+				ndma();
+			else
+				dma();
 		}
 
 		std::vector<uint8_t> buffer;
