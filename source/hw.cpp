@@ -1,6 +1,5 @@
 #include <Maia/hw/hw.hpp>
 
-hw::Quirks hw::quirks;
 hw::Features hw::features;
 
 void init_twl(){
@@ -18,7 +17,7 @@ void init_twl(){
 
     // We still need to do these checks incase we can't access SCFG_EXT
     if(REG_SCFG_EXT & (1 << 0))
-        hw::quirks.geometry_dma = 0; // Revised ARM9 DMA Circuit fixes this quirk
+        hw::features.revised_dma = 1;
 
     if(REG_SCFG_EXT & (1 << 16))
         hw::features.ndma = 1;
@@ -29,8 +28,6 @@ void init_twl(){
 }
 
 void hw::init(){
-    quirks.geometry_dma = 1; // Gets cleared later by init_twl if it can fix it
-
     auto is_dsi = isDSiMode();
     printf("hw: Running on a \x1b[36;1m%s\x1b[37;1m\n", is_dsi ? "DSi" : "DS");
     if(is_dsi)

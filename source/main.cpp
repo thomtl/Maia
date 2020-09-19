@@ -15,6 +15,8 @@
 #include <planet_texture.h>
 #include <soundbank.h>
 
+#include <array>
+
 gl::Mesh make_planet(std::pair<size_t, size_t> tex_dimensions) {
     const par_octasphere_config cfg = {
         .corner_radius = 5,
@@ -93,23 +95,26 @@ int main() {
 
     // TODO: Some kind of Proc-gen?
     Planet a{"Sirius 1", "\x1b[31;1mWarning\x1b[37;1m: Pandemic on planet", 20, mesh, earthlike_texture};
-    a.body.position = {0, 0, 0};
     a.colour = {255, 255, 255};
+
+    a.body.position = {0, 0, 0};
     a.body.mass = 1000;
 
     Planet b{"Sirius 1a", "Small moon bumbling with animals", 10, mesh, earthlike_texture};
     b.colour = {255, 255, 255};
+
     b.body.position = {10, 0, 0};
     b.body.linear_velocity = {0, 0, -10};
     b.body.mass = 10;
 
-    Planet c{"Sirius 1b", "High-Metal Concentration world", 10, mesh, moon_texture};
+    Planet c{"Sirius 1b", "High-Metal Concentration world", 5, mesh, moon_texture};
     c.colour = {255, 255, 255};
+    
     c.body.position = {5, 0, 0};
     c.body.linear_velocity = {0, 0, 15};
     c.body.mass = 5;
 
-    std::vector<Planet> planets = {std::move(a), std::move(b), std::move(c)};
+    std::array<Planet, 3> planets{std::move(a), std::move(b), std::move(c)};
     size_t curr_planet = 0;
     printf("\x1b[32;1mOK\x1b[37;1m\n");
 

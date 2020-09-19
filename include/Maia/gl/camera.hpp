@@ -23,6 +23,6 @@ namespace gl {
         }
 
         float x;
-        vec3<float> eye, center;
+        vec3f eye, center;
     };
 }

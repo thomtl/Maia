@@ -52,8 +52,8 @@ namespace gl {
     };
 
     struct Vertex {
-        vec3<float> position, normal;
-        vec2<float> uv;
+        vec3f position, normal;
+        vec2f uv;
         vec3<uint8_t> colour;
     }; 
 

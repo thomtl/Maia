@@ -21,15 +21,40 @@ namespace ndma
                 uint32_t control;
             } channels[n_channels];
         };
+
+        enum class NdmaStartupModes : uint8_t {
+            // Common between ARM7 and ARM9
+            Timer0 = 0,
+            Timer1 = 1,
+            Timer2 = 2,
+            Timer3 = 3,
+            DsCartridgeSlot = 4,
+            VBlank = 6,
+            StartImmediately = 16,
+
+            // ARM7 Exclusives
+            Arm7NDSWifi = 7,
+            Arm7SDMMC = 8,
+            Arm7DSIWifi = 9,
+            Arm7AESIn = 10,
+            Arm7AEXOut = 11,
+            Arm7Microphone = 12,
+
+            // ARM9 Exclusives
+            Arm9HBlank = 7,
+            Arm9DisplaySync = 8,
+            Arm9WorkRam = 9,
+            Arm9GeometryFifo = 10,
+            Arm9Camera = 11
+        };
     } // namespace hw
     
-
     struct Transfer {
         enum class IncementMode { Increment = 0, Decrement = 1, Fixed = 2 };
 
         IncementMode src_inc = IncementMode::Increment, dst_inc = IncementMode::Increment;
 
-        uint8_t startup_mode = 0x10;
+        hw::NdmaStartupModes startup_mode = hw::NdmaStartupModes::StartImmediately;
 
         uint32_t src, dst;
         size_t len;

@@ -75,7 +75,7 @@ namespace gl::packets {
 
 	struct [[gnu::packed]] normal_packet {
 		normal_packet(v10 x, v10 y, v10 z): cmd{0x21}, x{(uint32_t)x}, y{(uint32_t)y}, z{(uint32_t)z} {}
-		normal_packet(const vec3<float> n) : normal_packet{floattov10(n.x), floattov10(n.y), floattov10(n.z)} {}
+		normal_packet(const vec3f n) : normal_packet{floattov10(n.x), floattov10(n.y), floattov10(n.z)} {}
 
 		uint32_t cmd;
 		struct {
@@ -89,7 +89,7 @@ namespace gl::packets {
 
 	struct [[gnu::packed]] texcoord_packet {
 		texcoord_packet(t16 s, t16 t): cmd{0x22}, s{(uint32_t)s}, t{(uint32_t)t} {}
-		texcoord_packet(const vec2<float>& u) : texcoord_packet{floattot16(u.x), floattot16(u.y)} {}
+		texcoord_packet(const vec2f& u) : texcoord_packet{floattot16(u.x), floattot16(u.y)} {}
 
 		uint32_t cmd;
 		struct {
@@ -101,7 +101,7 @@ namespace gl::packets {
 
 	struct [[gnu::packed]] vtx_16_packet {
 		vtx_16_packet(v16 x, v16 y, v16 z): cmd{0x23}, x{(uint16_t)x}, y{(uint16_t)y}, z{(uint16_t)z} {}
-		vtx_16_packet(const vec3<float>& v): vtx_16_packet{floattov16(v.x), floattov16(v.y), floattov16(v.z)} {}
+		vtx_16_packet(const vec3f& v): vtx_16_packet{floattov16(v.x), floattov16(v.y), floattov16(v.z)} {}
 
 		uint32_t cmd;
 		uint16_t x;
@@ -219,12 +219,7 @@ namespace gl::packets {
 
 namespace gl {
 	struct cmdlist {
-		cmdlist(): buffer{}, updated{true} {
-			buffer.push_back(0); // Reserve space for command count
-			buffer.push_back(0);
-			buffer.push_back(0);
-			buffer.push_back(0);
-		}
+		cmdlist(): buffer{}, updated{true} { }
 
 		void append(const packets::Packet auto &packet) {
 			const auto *data = reinterpret_cast<const uint8_t*>(&packet);
@@ -244,7 +239,6 @@ namespace gl {
 			
 			sassert(buffer.size() != 0, "Trying to execute 0 sized command buffer");
 
-
 			// Flush the area that we are going to DMA if it was updated since last execution
 			if(updated) {
 				DC_FlushRange(buffer.data(), buffer.size());
@@ -254,7 +248,7 @@ namespace gl {
 			auto dma = [this]{
 				// Don't start DMAing while anything else is being DMAed because FIFO DMA is touchy as hell, gets fixed by DSi Revised geometry circuit
 				// If anyone can explain this better that would be great. -- gabebear
-				if(hw::quirks.geometry_dma) {
+				if(!hw::features.revised_dma) {
 					while((DMA_CR(0) & DMA_BUSY) || (DMA_CR(1) & DMA_BUSY) || (DMA_CR(2) & DMA_BUSY) || (DMA_CR(3) & DMA_BUSY))
 						;
 				} else {
@@ -262,7 +256,7 @@ namespace gl {
 						;
 				}
 
-				// send the packed list asynchronously via DMA to the FIFO
+				// Send the packed list asynchronously via DMA to the FIFO
 				DMA_SRC(0) = (u32)buffer.data();
 				DMA_DEST(0) = 0x4000400;
 				DMA_CR(0) = DMA_FIFO | (buffer.size() / 4);
@@ -273,7 +267,7 @@ namespace gl {
 				using namespace ndma;
 
 				Transfer transfer{};
-				transfer.startup_mode = 0x0A; // Geometry FIFO
+				transfer.startup_mode = ndma::hw::NdmaStartupModes::Arm9GeometryFifo;
 
 				transfer.src = (uint32_t)buffer.data();
 				transfer.src_inc = ndma::Transfer::IncementMode::Increment;

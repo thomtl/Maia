@@ -6,7 +6,7 @@
 
 struct Shape {
     virtual float moment_of_inertia(float mass) = 0;
-    virtual vec3<float> distance_from_center(const vec3<float>& pos, const vec3<float>& point) = 0;
+    virtual vec3f distance_from_center(const vec3f& pos, const vec3f& point) = 0;
 
     auto operator<=>(const Shape&) const = default;
 };
@@ -17,7 +17,7 @@ struct Sphere : public Shape {
         return (2.0 / 5.0) * mass * radius * radius;
     }
 
-    vec3<float> distance_from_center(const vec3<float>& pos, const vec3<float>& point) {
+    vec3f distance_from_center(const vec3f& pos, const vec3f& point) {
         return pos - point;
     }
 
@@ -27,8 +27,8 @@ struct Sphere : public Shape {
 struct PhysicsObject {
     PhysicsObject(): shape{nullptr}, position{}, rotation{}, linear_velocity{}, angular_velocity{}, mass{}, linear_acc{}, angular_acc{} {}
     Shape* shape;
-    vec3<float> position, rotation;
-    vec3<float> linear_velocity, angular_velocity;
+    vec3f position, rotation;
+    vec3f linear_velocity, angular_velocity;
     float mass;
 
     void step(float dt){
@@ -42,7 +42,7 @@ struct PhysicsObject {
         angular_acc = {};
     }
 
-    void add_force(const vec3<float>& f){
+    void add_force(const vec3f& f){
         linear_acc += f / mass;
 
         auto r = shape->distance_from_center(position, f);
@@ -52,5 +52,5 @@ struct PhysicsObject {
 
     auto operator<=>(const PhysicsObject&) const = default;
     private:
-    vec3<float> linear_acc, angular_acc; // Not a user changable element, just useful for keeping track of forces on the object each step
+    vec3f linear_acc, angular_acc; // Not a user changable element, just useful for keeping track of forces on the object each step
 };

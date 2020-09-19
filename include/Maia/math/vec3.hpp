@@ -52,12 +52,11 @@ struct vec3 {
     }
 
     float magnitude() const {
-        return sqrt((x * x) + (y * y) + (z * z));
+        return sqrt(sqr_magnitude());
     }
 
     vec3 normalized() const {
-        auto mag = magnitude();
-        return *this / mag;
+        return *this / magnitude();
     }
 
     vec3 cross(const vec3& b) const {
@@ -66,3 +65,5 @@ struct vec3 {
 
     auto operator<=>(const vec3&) const = default;
 };
+
+using vec3f = vec3<float>;

@@ -45,13 +45,14 @@ struct vec2 {
     }
 
     float magnitude() const {
-        return sqrt((x * x) + (y * y));
+        return sqrt(sqr_magnitude());
     }
 
     vec2 normalized() const {
-        auto mag = magnitude();
-        return {x / mag, y / mag};
+        return *this / magnitude();
     }
 
     auto operator<=>(const vec2&) const = default;
 };
+
+using vec2f = vec2<float>;

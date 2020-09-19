@@ -5,7 +5,7 @@
 #include <Maia/math/physics_object.hpp>
 #include <Maia/gl/gl.hpp>
 
-struct Planet  {
+struct Planet {
     Planet(const char* name, const char* description, size_t diameter, gl::Mesh& mesh, gl::Texture& texture): body{}, name{name}, description{description}, colour{255, 255, 255}, mesh{&mesh}, texture{&texture} {
         sphere.radius = diameter / 2;
         body.shape = &sphere;
@@ -26,7 +26,7 @@ struct Planet  {
         stack.rotate_x(body.rotation.x);
         stack.rotate_y(body.rotation.y);
         stack.rotate_z(body.rotation.z);
-        stack.scale(vec3<float>{sphere.radius * 2, sphere.radius * 2, sphere.radius * 2} * 0.01);
+        stack.scale(vec3f{sphere.radius * 2, sphere.radius * 2, sphere.radius * 2} * 0.01);
         stack.apply();
         
         glMaterialf(GL_AMBIENT, RGB15((this->colour.x >> 3) / 10, (this->colour.y >> 3) / 10, (this->colour.z >> 3) / 10));

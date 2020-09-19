@@ -38,13 +38,13 @@ namespace gl
             return *this;
         }
     
-        MatrixStack& translate(vec3<float> v) {
+        MatrixStack& translate(vec3f v) {
             cmd.append(gl::packets::mtx_translation_packet{(uint32_t)floattof32(v.x), (uint32_t)floattof32(v.y), (uint32_t)floattof32(v.z)});
 
             return *this;
         }
 
-        MatrixStack& scale(vec3<float> v) {
+        MatrixStack& scale(vec3f v) {
             cmd.append(gl::packets::mtx_scale_packet{(uint32_t)floattof32(v.x), (uint32_t)floattof32(v.y), (uint32_t)floattof32(v.z)});
 
             return *this;
@@ -129,7 +129,7 @@ namespace gl
             return *this;
         }
 
-        MatrixStack& look_at(const vec3<float>& eye, const vec3<float>& center, const vec3<float>& up) {
+        MatrixStack& look_at(const vec3f& eye, const vec3f& center, const vec3f& up) {
             auto compute = [this](int32_t eye[3], int32_t center[3], int32_t up[3]) {
                 int32_t forward[3] = {eye[0] - center[0], eye[1] - center[1], eye[2] - center[2]};
                 normalizef32(forward);

@@ -29,7 +29,6 @@ uint8_t NDMAController::transfer_async(const Transfer& transfer){
 }
 
 void NDMAController::transfer_await(uint8_t channel) {
-    // TODO: If transfer.enable_irq was true use swiIntrAwait here instead of polling and make sure its enabled in IE / IF
     while(mmio->channels[channel].control & (1 << 31))
         ;
 
