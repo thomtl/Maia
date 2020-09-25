@@ -29,6 +29,10 @@ struct vec2 {
         return {x * b, y * b};
     }
 
+    vec2 operator*(vec2 b) const {
+        return {x * b.x, y * b.y};
+    }
+
     vec2 operator/(T b) const {
         return {x / b, y / b};
     }

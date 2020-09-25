@@ -23,6 +23,10 @@ struct vec3 {
         return {x + b.x, y + b.y, z + b.z};
     }
 
+    vec3 operator/(const vec3& b) const {
+        return {x / b.x, y / b.y, z / b.z};
+    }
+
     vec3& operator*=(T b){
         x *= b;
         y *= b;

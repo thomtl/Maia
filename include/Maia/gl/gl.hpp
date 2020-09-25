@@ -73,7 +73,7 @@ namespace gl {
             for(const auto& vertex : vertices){
                 cmd.append(gl::packets::colour_packet{vertex.colour});
                 cmd.append(gl::packets::normal_packet{vertex.normal});
-                cmd.append(gl::packets::texcoord_packet{{vertex.uv.x * width_transform, vertex.uv.y * height_transform}});
+                cmd.append(gl::packets::texcoord_packet{vertex.uv * vec2f{width_transform, height_transform}});
                 cmd.append(gl::packets::vtx_16_packet{vertex.position});  
             }
 

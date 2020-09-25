@@ -5,7 +5,7 @@
 #include <Maia/math/vec3.hpp>
 
 struct Shape {
-    virtual float moment_of_inertia(float mass) = 0;
+    virtual vec3f moment_of_inertia(float mass) = 0; // The Moment of Inertia is actually a 3x3 Matrix/Tensor but we can ignore that, see below for an explanation
     virtual vec3f distance_from_center(const vec3f& pos, const vec3f& point) = 0;
 
     auto operator<=>(const Shape&) const = default;
@@ -13,8 +13,10 @@ struct Shape {
 
 struct Sphere : public Shape {
     float radius;
-    float moment_of_inertia(float mass) {
-        return (2.0 / 5.0) * mass * radius * radius;
+
+    vec3f moment_of_inertia(float mass) {
+        auto v = (2.0 / 5.0) * mass * radius * radius;
+        return {v, v, v};
     }
 
     vec3f distance_from_center(const vec3f& pos, const vec3f& point) {
@@ -46,7 +48,18 @@ struct PhysicsObject {
         linear_acc += f / mass;
 
         auto r = shape->distance_from_center(position, f);
-        auto t = r.cross(f);
+        auto t = r.cross(f); 
+
+        /*
+            Angular Acc, hereafter ω
+            Moment of Inertia, hereafter I, is actually a 3x3 matrix
+            Torque, hereafter L
+
+            L = I * ω
+            We know both L and I, and we want to know ω
+            Matrix division is undefined so the correct course of action would be ω = L * inverse(I) (or inverse(I) * L * inverse(I) ?)
+            However because in pretty much all cases I is a diagonal matrix we can do an optimization where we do ω = L / {I11, I22, I33}
+        */
         angular_acc += t / shape->moment_of_inertia(mass);
     }
 

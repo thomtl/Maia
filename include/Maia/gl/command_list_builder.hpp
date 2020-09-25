@@ -231,14 +231,10 @@ namespace gl {
 		}
 
 		void execute() {
-			/*
-				Taking the advice of glCallList here, to do it ourselves and only flush the region if something changed
-				Equivalent API call: glCallList((const uint32_t *)buffer.data());
-				Code here is mostly just taken from libnds
-			*/
+			if(buffer.size() == 0)
+				return;
 			
-			sassert(buffer.size() != 0, "Trying to execute 0 sized command buffer");
-
+			// Taking the advice of glCallList here, to do it ourselves and only flush the region if something changed
 			// Flush the area that we are going to DMA if it was updated since last execution
 			if(updated) {
 				DC_FlushRange(buffer.data(), buffer.size());
@@ -247,13 +243,10 @@ namespace gl {
 			
 			auto dma = [this]{
 				// Don't start DMAing while anything else is being DMAed because FIFO DMA is touchy as hell, gets fixed by DSi Revised geometry circuit
-				// If anyone can explain this better that would be great. -- gabebear
 				if(!hw::features.revised_dma) {
-					while((DMA_CR(0) & DMA_BUSY) || (DMA_CR(1) & DMA_BUSY) || (DMA_CR(2) & DMA_BUSY) || (DMA_CR(3) & DMA_BUSY))
-						;
+					while((DMA_CR(0) & DMA_BUSY) || (DMA_CR(1) & DMA_BUSY) || (DMA_CR(2) & DMA_BUSY) || (DMA_CR(3) & DMA_BUSY));
 				} else {
-					while(DMA_CR(0) & DMA_BUSY)
-						;
+					while(DMA_CR(0) & DMA_BUSY);
 				}
 
 				// Send the packed list asynchronously via DMA to the FIFO
