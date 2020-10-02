@@ -7,22 +7,31 @@
 
 namespace gl {
     struct Camera {
-        Camera(): x{0}, eye{}, center{} {}
+        Camera(): pitch{0}, yaw{0}, eye{}, center{} {}
 
         void update(){
             auto keys = keysHeld();
 
-            if(keys & KEY_LEFT) x -= 1;
-            if(keys & KEY_RIGHT) x += 1;
+            if(keys & KEY_RIGHT) yaw -= 0.1;
+            if(keys & KEY_LEFT) yaw += 0.1;
 
-            eye = {sin(x * 0.1) * 20, 5, cos(x * 0.1) * 20};
+            if(keys & KEY_UP) pitch -= 0.1;
+            if(keys & KEY_DOWN) pitch += 0.1;
+
+            constexpr float pi_2 = 1.57079632679489661923;
+
+            pitch = std::clamp(pitch, -pi_2 + 0.1f, pi_2 - 0.1f);
+
+            eye = {-cos(pitch) * sin(yaw) * 25,
+                   -sin(pitch) * 25,
+                   cos(pitch) * cos(yaw) * 25};
 
             gl::MatrixStack s{};
             s.mode(GL_MODELVIEW).identity().look_at(eye, center, {0.0f, 1.0f, 0.0f});
             s.apply();
         }
 
-        float x;
+        float pitch, yaw;
         vec3f eye, center;
     };
 }

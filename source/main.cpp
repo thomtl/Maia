@@ -131,21 +131,21 @@ int main() {
         if(keys_held & KEY_START)
             break;
         
-        if(keys_down & KEY_R){
+        if(keys_down & KEY_A){
             if(curr_planet == planets.size() - 1)
                 curr_planet = 0;
             else
                 curr_planet++;
         }
-        if(keys_down & KEY_L){
+        if(keys_down & KEY_B){
             if(curr_planet == 0)
                 curr_planet = planets.size() - 1;
             else
                 curr_planet--;
         }
 
-        if(keys_held & KEY_UP) fov -= 0.5;
-        if(keys_held & KEY_DOWN) fov += 0.5;
+        if(keys_held & KEY_R) fov -= 0.5;
+        if(keys_held & KEY_L) fov += 0.5;
         fov = std::clamp(fov, 2.0f, 100.0f);
 
         gl::MatrixStack s{};
@@ -158,10 +158,10 @@ int main() {
         for(auto& planet : planets) {
             planet.draw();
 
-            planet.update();
             for(auto& other : planets)
                 if(other != planet)
-                    other.attract(planet);       
+                    other.attract(planet);    
+            planet.update();   
         }
 
         glFlush(0);
