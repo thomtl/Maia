@@ -43,7 +43,7 @@ NITRO    :=
 ARCH := -marm -mthumb-interwork -march=armv5te -mtune=arm946e-s
 
 CFLAGS   := -g -Wall -Wno-volatile -Wno-narrowing -O3\
-            $(ARCH) $(INCLUDE) -DARM9 -fstrict-volatile-bitfields
+						$(ARCH) $(INCLUDE) -DARM9 -fstrict-volatile-bitfields
 CXXFLAGS := $(CFLAGS) -std=c++20 -fno-rtti -fno-exceptions
 ASFLAGS  := -g $(ARCH)
 LDFLAGS   = -specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
@@ -78,9 +78,9 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT := $(CURDIR)/$(TARGET)
 
 export VPATH := $(CURDIR)/$(subst /,,$(dir $(ICON)))\
-                $(foreach dir,$(SOURCES),$(CURDIR)/$(dir))\
-                $(foreach dir,$(DATA),$(CURDIR)/$(dir))\
-                $(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))
+								$(foreach dir,$(SOURCES),$(CURDIR)/$(dir))\
+								$(foreach dir,$(DATA),$(CURDIR)/$(dir))\
+								$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))
 
 export DEPSDIR := $(CURDIR)/$(BUILD)
 
@@ -92,22 +92,22 @@ BINFILES := $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 # prepare NitroFS directory
 ifneq ($(strip $(NITRO)),)
-  export NITRO_FILES := $(CURDIR)/$(NITRO)
+	export NITRO_FILES := $(CURDIR)/$(NITRO)
 endif
 
 # get audio list for maxmod
 ifneq ($(strip $(AUDIO)),)
-  export MODFILES	:=	$(foreach dir,$(notdir $(wildcard $(AUDIO)/*.*)),$(CURDIR)/$(AUDIO)/$(dir))
+	export MODFILES	:=	$(foreach dir,$(notdir $(wildcard $(AUDIO)/*.*)),$(CURDIR)/$(AUDIO)/$(dir))
 
-  # place the soundbank file in NitroFS if using it
-  ifneq ($(strip $(NITRO)),)
-    export SOUNDBANK := $(NITRO_FILES)/soundbank.bin
+	# place the soundbank file in NitroFS if using it
+	ifneq ($(strip $(NITRO)),)
+		export SOUNDBANK := $(NITRO_FILES)/soundbank.bin
 
-  # otherwise, needs to be loaded from memory
-  else
-    export SOUNDBANK := soundbank.bin
-    BINFILES += $(SOUNDBANK)
-  endif
+	# otherwise, needs to be loaded from memory
+	else
+		export SOUNDBANK := soundbank.bin
+		BINFILES += $(SOUNDBANK)
+	endif
 endif
 
 #---------------------------------------------------------------------------------
@@ -115,11 +115,11 @@ endif
 #---------------------------------------------------------------------------------
 ifeq ($(strip $(CPPFILES)),)
 #---------------------------------------------------------------------------------
-  export LD := $(CC)
+	export LD := $(CC)
 #---------------------------------------------------------------------------------
 else
 #---------------------------------------------------------------------------------
-  export LD := $(CXX)
+	export LD := $(CXX)
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
@@ -133,26 +133,26 @@ export OFILES := $(PNGFILES:.png=.o) $(OFILES_BIN) $(OFILES_SOURCES)
 export HFILES := $(PNGFILES:.png=.h) $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 export INCLUDE  := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir))\
-                   $(foreach dir,$(LIBDIRS),-I$(dir)/include)\
-                   -I$(CURDIR)/$(BUILD)
+									 $(foreach dir,$(LIBDIRS),-I$(dir)/include)\
+									 -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 ifeq ($(strip $(ICON)),)
-  icons := $(wildcard *.bmp)
+	icons := $(wildcard *.bmp)
 
-  ifneq (,$(findstring $(TARGET).bmp,$(icons)))
-    export GAME_ICON := $(CURDIR)/$(TARGET).bmp
-  else
-    ifneq (,$(findstring icon.bmp,$(icons)))
-      export GAME_ICON := $(CURDIR)/icon.bmp
-    endif
-  endif
+	ifneq (,$(findstring $(TARGET).bmp,$(icons)))
+		export GAME_ICON := $(CURDIR)/$(TARGET).bmp
+	else
+		ifneq (,$(findstring icon.bmp,$(icons)))
+			export GAME_ICON := $(CURDIR)/icon.bmp
+		endif
+	endif
 else
-  ifeq ($(suffix $(ICON)), .grf)
-    export GAME_ICON := $(CURDIR)/$(ICON)
-  else
-    export GAME_ICON := $(CURDIR)/$(BUILD)/$(notdir $(basename $(ICON))).grf
-  endif
+	ifeq ($(suffix $(ICON)), .grf)
+		export GAME_ICON := $(CURDIR)/$(ICON)
+	else
+		export GAME_ICON := $(CURDIR)/$(BUILD)/$(notdir $(basename $(ICON))).grf
+	endif
 endif
 
 .PHONY: $(BUILD) clean
@@ -174,6 +174,9 @@ else
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).nds: $(OUTPUT).elf $(NITRO_FILES) $(GAME_ICON)
+	ndstool -c $@ -9 $< -b $(GAME_ICON) "$(GAME_TITLE);$(GAME_SUBTITLE1);$(GAME_SUBTITLE2)" $(_ADDFILES) -g MAIA 00 "Maia" -z 80040000 -u 00030004
+	@echo built ... $(notdir $@)
+
 $(OUTPUT).elf: $(OFILES)
 
 # source files depend on generated headers
