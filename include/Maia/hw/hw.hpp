@@ -5,6 +5,7 @@
 namespace hw
 {
     struct Features {
+        uint32_t nocashgba : 1;
         uint32_t revised_dma : 1;
         uint32_t ndma : 1;
     };

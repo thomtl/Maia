@@ -273,8 +273,7 @@ namespace gl {
 				ndma9.transfer_sync(transfer);
 			};
 
-			constexpr bool use_ndma = false; // Currently we cannot use NDMA since no$gba doesn't support Geometry FIFO start mode
-			if (hw::features.ndma && use_ndma)
+			if (hw::features.ndma && !hw::features.nocashgba)
 				ndma();
 			else
 				dma();
