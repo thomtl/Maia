@@ -273,7 +273,7 @@ namespace gl {
 				ndma9.transfer_sync(transfer);
 			};
 
-			if (hw::features.ndma && !hw::features.nocashgba)
+			if (hw::features.ndma)
 				ndma();
 			else
 				dma();

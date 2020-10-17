@@ -27,18 +27,9 @@ void init_twl(){
     printf("\x1b[32;1mOK\x1b[37;1m"); // This has no '\n' because it *just* fits on the screen and that would make it skip one line
 }
 
-bool is_nocashgba() {
-	const auto* debug_str = (const char*)0x4FFFA00;
-	return strncmp(debug_str, "no$gba", 6) == 0;
-}
-
 void hw::init(){
     auto is_dsi = isDSiMode();
     printf("hw: Running on a \x1b[36;1m%s\x1b[37;1m\n", is_dsi ? "DSi" : "DS");
-    if(is_nocashgba()) {
-        printf("hw: Running on NO$GBA\n");
-        hw::features.nocashgba = 1;
-    }
 
     if(is_dsi)
         init_twl();
